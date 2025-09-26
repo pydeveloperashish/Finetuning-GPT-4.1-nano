@@ -4,6 +4,7 @@ import time
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
+import streamlit.components.v1 as components
 
 load_dotenv()
 
@@ -17,22 +18,60 @@ if not OPENAI_API_KEY:
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 st.set_page_config(page_title="Simple Streaming QA", layout="centered")
+components.html(
+    """
+    <script>
+    (function() {
+      function removeGithubNodes(root=document) {
+        // anchors linking to github
+        root.querySelectorAll('a[href*="github.com"]').forEach(el => {
+          // try to be conservative: remove if it contains svg/img or has aria-label/title related to "GitHub" or "source"
+          const txt = (el.getAttribute('title') || el.getAttribute('aria-label') || el.innerText || "").toLowerCase();
+          if (el.querySelector('svg') || el.querySelector('img') || txt.includes('github') || txt.includes('view source')) el.remove();
+        });
+        // buttons with GitHub titles
+        root.querySelectorAll('button[title*="GitHub"], button[aria-label*="GitHub"]').forEach(b => b.remove());
+        // any svg with accessible label mentioning github
+        root.querySelectorAll('svg').forEach(sv => {
+          const label = (sv.getAttribute('aria-label') || sv.getAttribute('title') || "").toLowerCase();
+          if (label.includes('github') || label.includes('view source')) {
+            const parent = sv.closest('a,button');
+            if (parent) parent.remove(); else sv.remove();
+          }
+        });
+      }
+
+      // initial pass
+      removeGithubNodes();
+
+      // Observe DOM for future inserts (header might be injected later)
+      const observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.addedNodes && m.addedNodes.length) {
+            removeGithubNodes(m.target);
+            m.addedNodes.forEach(n => {
+              try { removeGithubNodes(n); } catch(e){}
+            });
+          }
+        }
+      });
+
+      observer.observe(document.documentElement || document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      // Fallback: also run a few times in case of timing weirdness
+      const fallbackTimes = [200, 800, 2000];
+      fallbackTimes.forEach(t => setTimeout(removeGithubNodes, t));
+    })();
+    </script>
+    """,
+    height=0,
+)
 st.title("Simple Streaming Q → A")
 st.write("Type your question and click **Send**. Answer will stream in below.")
-st.markdown(
-    """
-    <style>
-      /* Hide links/images/buttons that point to GitHub (broad) */
-      a[href*="github.com"] { display: none !important; }
-      a[href*="github.com"] img { display: none !important; }
-      button[title*="GitHub"], button[title*="Open in GitHub"] { display: none !important; }
 
-      /* If needed: target header area only to reduce risk of hiding other links */
-      header a[href*="github.com"] { display: none !important; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 # single input box + send button
 user_input = st.text_area("Your question", height=150)
 send = st.button("Send")
