@@ -19,7 +19,20 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 st.set_page_config(page_title="Simple Streaming QA", layout="centered")
 st.title("Simple Streaming Q → A")
 st.write("Type your question and click **Send**. Answer will stream in below.")
+st.markdown(
+    """
+    <style>
+      /* Hide links/images/buttons that point to GitHub (broad) */
+      a[href*="github.com"] { display: none !important; }
+      a[href*="github.com"] img { display: none !important; }
+      button[title*="GitHub"], button[title*="Open in GitHub"] { display: none !important; }
 
+      /* If needed: target header area only to reduce risk of hiding other links */
+      header a[href*="github.com"] { display: none !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 # single input box + send button
 user_input = st.text_area("Your question", height=150)
 send = st.button("Send")
@@ -95,5 +108,5 @@ if send:
 
 # How does the extent of the market limit the division of labor?
 # What are the main topics discussed in Book V regarding the financial aspects of a sovereign or commonwealth?
-# "How does the division of labor in pin manufacturing illustrate the impact of specialization on productivity?
+# How does the division of labor in pin manufacturing illustrate the impact of specialization on productivity?
 # How does the division of labor influence the dexterity and productivity of workers in manufacturing processes?
